@@ -94,6 +94,25 @@ query {
 
 # Mutations
 
+- Add mutation code to [`links/schema.py`](hackernews/links/schema.py):
+- Add `Mutation` to [`hackernews/schema.py`](hackernews/hackernews/schema.py)
+- Create a link in GraphiQL:
+
+```
+mutation {
+  createLink(
+    url: "https://github.com",
+    description: "Lots of Code!"
+  ) {
+    id
+    url
+    description
+  }
+}
+```
+
+# Authentication
+
 # Sources
 
 - "GraphQL-Python Tutorial." <https://www.howtographql.com/graphql-python/1-getting-started/>.
