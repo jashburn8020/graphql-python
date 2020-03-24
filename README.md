@@ -72,7 +72,7 @@ Link.objects.create(url='https://twitter.com/jonatasbaldin/', description='The J
     - a custom type available in Graphene Django
   - the special type query was created with a resolver for the field `links`, which returns all the links
 - Create the [`hackernews/schema.py`](hackernews/hackernews/schema.py) file, with the query type
-  - the query just inherits the query defined in [`links/schema.py`](links/schema.py)
+  - the query just inherits the query defined in [`links/schema.py`](hackernews/links/schema.py)
     - this way, you are able to keep every part of the schema isolated in the apps
 
 ## Introducing GraphiQL
