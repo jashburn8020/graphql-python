@@ -1,5 +1,7 @@
 # Getting Started
 
+- See [Core Concepts](fundamentals.md)
+
 ## Installing Django and Graphene
 
 ```
@@ -12,7 +14,7 @@ python manage.py runserver
 
 ## Configuring Graphene Django
 
-- `hackernews/settings.py`:
+- [`hackernews/settings.py`](hackernews/settings.py):
 
 ```
 INSTALLED_APPS = (
@@ -38,8 +40,8 @@ python manage.py startapp links
 ```
 
 - Define a Model – the layer between Django and the database
-  - see `links/models.py`
-- Configure Django to use the new `links` app in the `hackernews/settings.py` file:
+  - see [`links/models.py`](links/models.py)
+- Configure Django to use the new `links` app in the [`hackernews/settings.py`](hackernews/settings.py) file:
 
 ```
 INSTALLED_APPS = (
@@ -65,18 +67,18 @@ Link.objects.create(url='https://twitter.com/jonatasbaldin/', description='The J
 
 ## Creating your first Type and Schema
 
-- Create the `links/schema.py` file
+- Create the [`links/schema.py`](links/schema.py) file
   - `LinkType` was created using the `DjangoObjectType`
     - a custom type available in Graphene Django
   - the special type query was created with a resolver for the field `links`, which returns all the links
-- Create the `hackernews/schema.py` file, with the query type
-  - the query just inherits the query defined in `links.schema.py`
+- Create the [`hackernews/schema.py`](hackernews/schema.py) file, with the query type
+  - the query just inherits the query defined in [`links/schema.py`](links/schema.py)
     - this way, you are able to keep every part of the schema isolated in the apps
 
 ## Introducing GraphiQL
 
 - Note that you need to disable the Django CSRF protection
-- See `hackernews/urls.py`
+- See [`hackernews/urls.py`](hackernews/urls.py)
 - Open your browser and access <http://localhost:8000/graphql/>
   - create your first query
 
