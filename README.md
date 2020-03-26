@@ -115,7 +115,7 @@ mutation {
 
 ## Creating a User
 
-- Create a new folder under `hackernews` called `users` and a new file called [`schema.py`](hackernews/user/schema.py)
+- Create a new folder under `hackernews` called `users` and a new file called [`schema.py`](hackernews/users/schema.py)
 - Put the new mutation in the root schema file, [`hackernews/schema.py`](hackernews/hackernews/schema.py)
 - Create the user in GraphiQL:
 
@@ -156,7 +156,7 @@ query {
 
 ## Configuring django-graphql-jwt
 
-- In the [`hackernews/settings.py`](hackernews/hackernews/settings.py] file, under the `GRAPHENE` variable, add the following `MIDDLEWARE` line:
+- In the [`hackernews/settings.py`](hackernews/hackernews/settings.py) file, under the `GRAPHENE` variable, add the following `MIDDLEWARE` line:
 
 ```
 GRAPHENE = {
