@@ -279,6 +279,58 @@ query {
 }
 ```
 
+# Links and Voting
+
+## Attaching Users to Links
+
+- Integrate the Links and Users models
+  - add the `posted_by` field to the `Link` class in [`links/models.py`](hackernews/links/models.py)
+- Run the Django commands to reflect the changes in the database:
+
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+- In [`links/schema.py`](hackernews/links/schema.py), in the `CreateLink` mutation, return the User in the `posted_by` field
+- To test it, send a mutation to the server along with the JWT token
+
+```
+mutation {
+    createLink(url: "http://test.com", description: "testy") {
+        id
+        url
+        description
+        postedBy {
+            id
+            username
+            email
+        }
+    }
+}
+```
+
+- Example response:
+
+```
+{
+    "data": {
+        "createLink": {
+            "id": 4,
+            "url": "http://test.com",
+            "description": "testy",
+            "postedBy": {
+                "id": "1",
+                "username": "asdf",
+                "email": "asdf@qwerty.com"
+            }
+        }
+    }
+}
+```
+
+## Adding Votes
+
 # Sources
 
 - "GraphQL-Python Tutorial." <https://www.howtographql.com/graphql-python/1-getting-started/>.
