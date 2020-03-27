@@ -272,10 +272,10 @@ mutation {
 
 ```
 query {
-    me {
-        id
-        username
-    }
+  me {
+    id
+    username
+  }
 }
 ```
 
@@ -297,16 +297,16 @@ python manage.py migrate
 
 ```
 mutation {
-    createLink(url: "http://test.com", description: "testy") {
-        id
-        url
-        description
-        postedBy {
-            id
-            username
-            email
-        }
+  createLink(url: "http://test.com", description: "testy") {
+    id
+    url
+    description
+    postedBy {
+      id
+      username
+      email
     }
+  }
 }
 ```
 
@@ -314,23 +314,176 @@ mutation {
 
 ```
 {
-    "data": {
-        "createLink": {
-            "id": 4,
-            "url": "http://test.com",
-            "description": "testy",
-            "postedBy": {
-                "id": "1",
-                "username": "asdf",
-                "email": "asdf@qwerty.com"
-            }
-        }
+  "data": {
+    "createLink": {
+      "id": 4,
+      "url": "http://test.com",
+      "description": "testy",
+      "postedBy": {
+        "id": "1",
+        "username": "asdf",
+        "email": "asdf@qwerty.com"
+      }
     }
+  }
 }
 ```
 
 ## Adding Votes
 
+- Add the Vote model in [`links/models.py`](hackernews/links/models.py)
+- Reflect the changes in the database
+
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+- Add a new mutation, `CreateVote`, for voting in [`links/schema.py`](hackernews/links/schema.py)
+- Vote for a link:
+
+```
+mutation {
+  createVote(linkId: 4) {
+    user {
+      id
+      username
+      email
+    }
+    link {
+      id
+      url
+    }
+  }
+}
+```
+
+## Relating Links and Votes
+
+- To get a list of all the votes and a list of votes from each link
+- Add the `VoteType`, `votes` field, and a `resolve_votes` method to [`links/schema.py`](hackernews/links/schema.py) to get all votes
+- Query for all the votes
+
+```
+query {
+  votes {
+    id
+    user {
+      id
+      username
+    }
+    link {
+      id
+      url
+    }
+  }
+}
+```
+
+- Query for all the links
+
+```
+query {
+  links {
+    id
+    url
+    votes {
+      id
+      user {
+        id
+        username
+      }
+    }
+  }
+}
+```
+
+# Error Handling
+
+## Schema Errors
+
+- All the fields from queries and mutations have a strong type, so requesting and inputting wrong data will generate an error
+- Example:
+
+```
+query {
+  links {
+    id
+    cheese
+  }
+}
+```
+
+- Response (status 400):
+
+```
+{
+  "errors": [
+    {
+      "message": "Cannot query field \"cheese\" on type \"LinkType\".",
+      "locations": [
+        {
+          "line": 4,
+          "column": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Graphene Errors
+
+- On the application level, you can use the `GraphQLError` class or Python exceptions
+- See [`links/schema.py`](hackernews/links/schema.py)
+  - both give similar response
+
+# Filtering
+
+## Filtering Links
+
+- Pass an argument to the `links` field, used by the resolver to filter the results
+  - concept is the same as mutations
+- In [`links/schema.py`](hackernews/links/schema.py):
+
+```
+class Query(graphene.ObjectType):
+    # Search parameter inside our links field
+    links = graphene.List(LinkType, search=graphene.String())
+    ...
+
+    def resolve_links(self, info, search=None, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        if search:
+            links_filter = Q(url__icontains=search) | Q(description__icontains=search)
+            return Link.objects.filter(links_filter)
+
+        return Link.objects.all()
+
+    ...
+```
+
+- Search query
+
+```
+query {
+  links(search: "jonatas") {
+    id
+    url
+    description
+  }
+}
+```
+
+# Pagination
+
 # Sources
 
-- "GraphQL-Python Tutorial." <https://www.howtographql.com/graphql-python/1-getting-started/>.
+- "graphql-python Getting Started." <https://www.howtographql.com/graphql-python/1-getting-started/>.
+- "graphql-python Queries." <https://www.howtographql.com/graphql-python/2-queries/>.
+- "graphql-python Mutations." <https://www.howtographql.com/graphql-python/3-mutations/>
+- "graphql-python Authentication." <https://www.howtographql.com/graphql-python/4-authentication/>
+- "graphql-python Links and Voting." <https://www.howtographql.com/graphql-python/5-links-and-voting/>
+- "graphql-python Error Handling." <https://www.howtographql.com/graphql-python/6-error-handling/>.
+- "graphql-python Filtering." <https://www.howtographql.com/graphql-python/7-filtering/>.
+- "graphql-python Pagination." <https://www.howtographql.com/graphql-python/8-pagination/>.
