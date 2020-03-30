@@ -510,7 +510,7 @@ query {
 
 ## Using Relay on Links
 
-- Create a new file [`links/schema_relay.py`](hackernews/links/schema_relay.py]
+- Create a new file [`links/schema_relay.py`][hackernews/links/schema_relay.py]
   - _Relay_ prefix to avoid confusion - not really needed
 - Add the new query to the root schema file, [`hackernews/schema.py`](hackernews/hackernews/schema.py)
 - Relay query for a link:
