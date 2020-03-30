@@ -17,17 +17,30 @@ class VoteType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
-    # Search parameter inside our links field
-    links = graphene.List(LinkType, search=graphene.String())
+    # search parameter inside our links field
+    # first and skip for pagination
+    links = graphene.List(
+        LinkType, search=graphene.String(), first=graphene.Int(), skip=graphene.Int(),
+    )
     votes = graphene.List(VoteType)
 
-    def resolve_links(self, info, search=None, **kwargs):
+    def resolve_links(self, info, search=None, first=None, skip=None, **kwargs):
+        qs = Link.objects.all()
+
         # The value sent with the search parameter will be in the args variable
         if search:
             links_filter = Q(url__icontains=search) | Q(description__icontains=search)
-            return Link.objects.filter(links_filter)
+            qs = qs.filter(links_filter)
 
-        return Link.objects.all()
+        if skip:
+            # Python slicing
+            qs = qs[skip:]
+
+        if first:
+            # Python slicing
+            qs = qs[:first]
+
+        return qs
 
     def resolve_votes(self, info, **kwargs):
         return Vote.objects.all()

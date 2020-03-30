@@ -477,6 +477,210 @@ query {
 
 # Pagination
 
+- The simple way defined in the GraphQL pagination documentation is to slice the results using two parameters:
+  - `first`: returns the first _n_ items
+  - `skip`: skips the first _n_ items
+- See <https://graphql.org/learn/pagination/>
+- Add `first` and `skip` parameter support to `Query` in [`links/schema.py`](hackernews/links/schema.py)
+- Pagination query
+
+```
+query {
+  links(first: 2, skip: 1) {
+    id
+    description
+    url
+  }
+}
+```
+
+# Relay
+
+- Relay is a Javascript framework built by Facebook with the purpose of improving the GraphQL architecture by making some core assumptions:
+  - a mechanism for refetching an object
+    - gives every object a global unique identifier
+  - a description of how to page through connections
+    - creates a cursor-based pagination structure
+  - structure around mutations to make them predictable
+    - introduces the input parameter to mutations
+- See:
+  - <https://facebook.github.io/relay/docs/en/graphql-server-specification.html>
+  - <http://docs.graphene-python.org/projects/django/en/latest/tutorial-relay/>
+- Graphene and Graphene Django already comes with the Relay implementation
+
+## Using Relay on Links
+
+- Create a new file [`links/schema_relay.py`](hackernews/links/schema_relay.py]
+  - _Relay_ prefix to avoid confusion - not really needed
+- Add the new query to the root schema file, [`hackernews/schema.py`](hackernews/hackernews/schema.py)
+- Relay query for a link:
+
+```
+query {
+  relayLink(id: "TGlua05vZGU6Mg==") {
+    id
+    url
+    description
+  }
+}
+```
+
+- Relay query for links:
+
+```
+query {
+  relayLinks {
+    edges {
+      node {
+        id
+        url
+        description
+        votes {
+          edges {
+            node {
+              id
+              user {
+                id
+                username
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+- Edges: represents a collection, which has pagination properties
+- Nodes: the final object or and edge for a new list of objects
+- Relay query with pagination - `before`, `after`, `first`, `last`
+  - each edge has a `pageInfo` object, including cursor for navigating between pages
+
+```
+query {
+  relayLinks(first: 2) {
+    edges {
+      node {
+        id
+        url
+        description
+      }
+    }
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+  }
+}
+```
+
+- Response:
+
+```
+{
+  "data": {
+    "relayLinks": {
+      "edges": [
+        {
+          "node": {
+            "id": "TGlua05vZGU6MQ==",
+            "url": "https://www.howtographql.com/",
+            "description": "The Fullstack Tutorial for GraphQL"
+          }
+        },
+        {
+          "node": {
+            "id": "TGlua05vZGU6Mg==",
+            "url": "https://twitter.com/jonatasbaldin/",
+            "description": "The Jonatas Baldin Twitter"
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasPreviousPage": false,
+        "hasNextPage": true,
+        "startCursor": "YXJyYXljb25uZWN0aW9uOjA=",
+        "endCursor": "YXJyYXljb25uZWN0aW9uOjE="
+      }
+    }
+  }
+}
+```
+
+- Relay query with pagination using cursor:
+
+```
+query {
+  relayLinks(first: 1, before: "YXJyYXljb25uZWN0aW9uOjE=") {
+    edges {
+      node {
+        id
+        url
+        description
+      }
+    }
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+  }
+}
+```
+
+- Response:
+
+```
+{
+  "data": {
+    "relayLinks": {
+      "edges": [
+        {
+          "node": {
+            "id": "TGlua05vZGU6MQ==",
+            "url": "https://www.howtographql.com/",
+            "description": "The Fullstack Tutorial for GraphQL"
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasPreviousPage": false,
+        "hasNextPage": false,
+        "startCursor": "YXJyYXljb25uZWN0aW9uOjA=",
+        "endCursor": "YXJyYXljb25uZWN0aW9uOjA="
+      }
+    }
+  }
+}
+```
+
+## Relay and Mutations
+
+- Add mutation code to [`links/schema_relay.py`](hackernews/links/schema_relay.py)
+- Add the new mutation to the root schema file, [`hackernews/schema.py`](hackernews/hackernews/schema.py)
+- Relay mutation to create a link:
+
+```
+mutation {
+  relayCreateLink(input: {
+    url: "http://deployeveryday.com",
+    description: "Author's Blog"
+  }) {
+    link {
+      id
+      url
+      description
+    }
+  }
+}
+```
+
+- The `input` argument accepts the defined `url` and `description` arguments as a dictionary
+
 # Sources
 
 - "graphql-python Getting Started." <https://www.howtographql.com/graphql-python/1-getting-started/>.
@@ -487,3 +691,4 @@ query {
 - "graphql-python Error Handling." <https://www.howtographql.com/graphql-python/6-error-handling/>.
 - "graphql-python Filtering." <https://www.howtographql.com/graphql-python/7-filtering/>.
 - "graphql-python Pagination." <https://www.howtographql.com/graphql-python/8-pagination/>.
+- "graphql-python Relay." <https://www.howtographql.com/graphql-python/9-relay/>.
